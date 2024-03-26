@@ -11,9 +11,11 @@ namespace dapper_api.Endpoints
 {
     public static class CustomerEnpoints
     {
-        public static async void MapCustomerEnpoints(this IEndpointRouteBuilder builder){
+        public static void MapCustomerEnpoints(this IEndpointRouteBuilder builder){
             
-            builder.MapGet("customers", async (SqlConnectionFactory _sqlConnectionFactory) => 
+            var group = builder.MapGroup("customers");
+
+            group.MapGet("", async (SqlConnectionFactory _sqlConnectionFactory) => 
             {
                 using var connection = _sqlConnectionFactory.Create();
 
@@ -24,7 +26,7 @@ namespace dapper_api.Endpoints
                 return Results.Ok(customers);
             });
 
-            builder.MapGet("customers/{id}", async (int id, SqlConnectionFactory _sqlConnectionFactory) => 
+            group.MapGet("{id}", async (int id, SqlConnectionFactory _sqlConnectionFactory) => 
             {
                 using var connection = _sqlConnectionFactory.Create();
 
@@ -36,7 +38,7 @@ namespace dapper_api.Endpoints
                 return customer is not null ? Results.Ok(customer) : Results.NotFound("Customer not found");
             });
 
-            builder.MapPost("customers", async (Customer customer ,SqlConnectionFactory _sqlConnectionFactory) => 
+            group.MapPost("", async (Customer customer ,SqlConnectionFactory _sqlConnectionFactory) => 
             {
                 using var connection = _sqlConnectionFactory.Create();
 
@@ -47,7 +49,7 @@ namespace dapper_api.Endpoints
                 return Results.Ok();
             });
 
-            builder.MapPut("customers/{id}", async (int id, Customer customer ,SqlConnectionFactory _sqlConnectionFactory) => 
+            group.MapPut("{id}", async (int id, Customer customer ,SqlConnectionFactory _sqlConnectionFactory) => 
             {
                 customer.Id = id; //Para esto se utilizaria un DTO
                 using var connection = _sqlConnectionFactory.Create();
@@ -58,7 +60,7 @@ namespace dapper_api.Endpoints
                 return Results.NoContent();
             });
 
-            builder.MapDelete("customers/{id}" , async (int id, SqlConnectionFactory _sqlConnectionFactory) => {
+            group.MapDelete("{id}" , async (int id, SqlConnectionFactory _sqlConnectionFactory) => {
                 using var connection = _sqlConnectionFactory.Create();
 
                 const string sql = "DELETE FROM Customers WHERE Id =@CustomerId";
