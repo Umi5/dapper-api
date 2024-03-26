@@ -11,7 +11,7 @@ namespace dapper_api.Endpoints
 {
     public static class CustomerEnpoints
     {
-        public static void MapCustomerEnpoints(this IEndpointRouteBuilder builder){
+        public static async void MapCustomerEnpoints(this IEndpointRouteBuilder builder){
             
             builder.MapGet("customers", async (SqlConnectionFactory _sqlConnectionFactory) => 
             {
@@ -58,6 +58,14 @@ namespace dapper_api.Endpoints
                 return Results.NoContent();
             });
 
+            builder.MapDelete("customers/{id}" , async (int id, SqlConnectionFactory _sqlConnectionFactory) => {
+                using var connection = _sqlConnectionFactory.Create();
+
+                const string sql = "DELETE FROM Customers WHERE Id =@CustomerId";
+                await connection.ExecuteAsync(sql, new { CustomerId = id } );
+
+                return Results.NoContent();
+            });
         }
     }
 }
