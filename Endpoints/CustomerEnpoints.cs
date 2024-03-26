@@ -56,17 +56,17 @@ namespace dapper_api.Endpoints
 
                 const string sql = "UPDATE Customers SET Id= @Id , Name= @Name, Email= @Email WHERE Id = @Id";
 
-                await connection.ExecuteAsync(sql, customer);
-                return Results.NoContent();
+                var rows = await connection.ExecuteAsync(sql, customer);
+                return rows == 1 ? Results.Ok($"Customer with id {id} updated") : Results.NotFound($"Customer with id {id} not found");
             });
 
             group.MapDelete("{id}" , async (int id, SqlConnectionFactory _sqlConnectionFactory) => {
                 using var connection = _sqlConnectionFactory.Create();
 
                 const string sql = "DELETE FROM Customers WHERE Id =@CustomerId";
-                await connection.ExecuteAsync(sql, new { CustomerId = id } );
+                var rows = await connection.ExecuteAsync(sql, new { CustomerId = id } );
 
-                return Results.NoContent();
+                return rows == 1 ? Results.Ok($"Customer with id {id} deleted") : Results.NotFound($"Customer with id {id} not found");
             });
         }
     }
