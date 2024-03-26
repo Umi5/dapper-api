@@ -14,27 +14,49 @@ namespace dapper_api.Endpoints
         public static void MapCustomerEnpoints(this IEndpointRouteBuilder builder){
             
             builder.MapGet("customers", async (SqlConnectionFactory _sqlConnectionFactory) => 
-                {
-                    var connection = _sqlConnectionFactory.Create();
+            {
+                using var connection = _sqlConnectionFactory.Create();
 
-                    const string sql = "SELECT Id, Name, Email FROM Customers";
+                const string sql = "SELECT Id, Name, Email FROM Customers";
 
-                    var customers = await connection.QueryAsync<Customer>(sql);
+                var customers = await connection.QueryAsync<Customer>(sql);
 
-                    return Results.Ok(customers);
-                });
+                return Results.Ok(customers);
+            });
 
-             builder.MapGet("customers/{id}", async (int id, SqlConnectionFactory _sqlConnectionFactory) => 
-                {
-                    var connection = _sqlConnectionFactory.Create();
+            builder.MapGet("customers/{id}", async (int id, SqlConnectionFactory _sqlConnectionFactory) => 
+            {
+                using var connection = _sqlConnectionFactory.Create();
 
-                    const string sql = "SELECT Id, Name, Email FROM Customers WHERE Id = @CustomerId";
+                const string sql = "SELECT Id, Name, Email FROM Customers WHERE Id = @CustomerId";
 
-                    var customer = await connection.QuerySingleOrDefaultAsync<Customer>(sql, new { CustomerId = id });
+                var customer = await connection.QuerySingleOrDefaultAsync<Customer>(sql, new { CustomerId = id });
 
-                    
-                    return customer is not null ? Results.Ok(customer) : Results.NotFound("Customer not found");
-                });
+                
+                return customer is not null ? Results.Ok(customer) : Results.NotFound("Customer not found");
+            });
+
+            builder.MapPost("customers", async (Customer customer ,SqlConnectionFactory _sqlConnectionFactory) => 
+            {
+                using var connection = _sqlConnectionFactory.Create();
+
+                const string sql = "INSERT INTO Customers (Id, Name, Email) VALUES (@Id, @Name, @Email)";
+
+                await connection.ExecuteAsync(sql, customer);
+
+                return Results.Ok();
+            });
+
+            builder.MapPut("customers/{id}", async (int id, Customer customer ,SqlConnectionFactory _sqlConnectionFactory) => 
+            {
+                customer.Id = id; //Para esto se utilizaria un DTO
+                using var connection = _sqlConnectionFactory.Create();
+
+                const string sql = "UPDATE Customers SET Id= @Id , Name= @Name, Email= @Email WHERE Id = @Id";
+
+                await connection.ExecuteAsync(sql, customer);
+                return Results.NoContent();
+            });
 
         }
     }
